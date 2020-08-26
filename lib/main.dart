@@ -21,10 +21,7 @@ class _MyAppState extends State<MyApp> {
 
   void _switchText() {
     setState(() {
-      if (_index < _texts.length - 1)
-        _index++;
-      else
-        _index = 0;
+      _index = _index++ % _texts.length;
     });
   }
 
