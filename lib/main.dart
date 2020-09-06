@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
               ),
           appBarTheme: AppBarTheme(
             textTheme: ThemeData.light().textTheme.copyWith(
-                  headline6: TextStyle(
+                  headline6: const TextStyle(
                     fontFamily: 'OpenSans',
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -87,38 +87,87 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
+  List<Widget> _buildLandscapeContent(
+      MediaQueryData mediaQuery, AppBar appBar, Widget txListWidget) {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text('Show Chart', style: Theme.of(context).textTheme.headline6),
+          Switch.adaptive(
+              value: _showChart,
+              onChanged: (value) {
+                setState(() {
+                  _showChart = value;
+                });
+              }),
+        ],
+      ),
+      _showChart
+          ? Container(
+              height: (mediaQuery.size.height -
+                      appBar.preferredSize.height -
+                      mediaQuery.padding.top) *
+                  0.7,
+              child: Chart(_recentTransactions),
+            )
+          : txListWidget
+    ];
+  }
+
+  List<Widget> _buildPortraitContent(
+      MediaQueryData mediaQuery, AppBar appBar, Widget txListWidget) {
+    return [
+      Container(
+        height: (mediaQuery.size.height -
+                appBar.preferredSize.height -
+                mediaQuery.padding.top) *
+            0.3,
+        child: Chart(_recentTransactions),
+      ),
+      txListWidget
+    ];
+  }
+
+  Widget _buildCupertinoNavigationBar() {
+    return CupertinoNavigationBar(
+      middle: const Text(
+        'Personal Expenses',
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: () => _showModal(context),
+            child: const Icon(CupertinoIcons.add),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppBar() {
+    return AppBar(
+      title: const Text(
+        'Personal Expenses',
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(
+            Icons.add,
+          ),
+          onPressed: () => _showModal(context),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
-    final PreferredSizeWidget _appBar = Platform.isIOS
-        ? CupertinoNavigationBar(
-            middle: Text(
-              'Personal Expenses',
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                GestureDetector(
-                  onTap: () => _showModal(context),
-                  child: Icon(CupertinoIcons.add),
-                )
-              ],
-            ),
-          )
-        : AppBar(
-            title: Text(
-              'Personal Expenses',
-            ),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  Icons.add,
-                ),
-                onPressed: () => _showModal(context),
-              ),
-            ],
-          );
+    final PreferredSizeWidget _appBar =
+        Platform.isIOS ? _buildCupertinoNavigationBar() : _buildAppBar();
 
     final txListWidget = Container(
       height: (mediaQuery.size.height -
@@ -132,39 +181,17 @@ class _MyHomePageState extends State<MyHomePage> {
       child: SingleChildScrollView(
         child: Column(children: [
           if (isLandscape)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Show Chart',
-                    style: Theme.of(context).textTheme.headline6),
-                Switch.adaptive(
-                    value: _showChart,
-                    onChanged: (value) {
-                      setState(() {
-                        _showChart = value;
-                      });
-                    }),
-              ],
+            ..._buildLandscapeContent(
+              mediaQuery,
+              _appBar,
+              txListWidget,
             ),
           if (!isLandscape)
-            Container(
-              height: (mediaQuery.size.height -
-                      _appBar.preferredSize.height -
-                      mediaQuery.padding.top) *
-                  0.3,
-              child: Chart(_recentTransactions),
+            ..._buildPortraitContent(
+              mediaQuery,
+              _appBar,
+              txListWidget,
             ),
-          if (!isLandscape) txListWidget,
-          if (isLandscape)
-            _showChart
-                ? Container(
-                    height: (mediaQuery.size.height -
-                            _appBar.preferredSize.height -
-                            mediaQuery.padding.top) *
-                        0.7,
-                    child: Chart(_recentTransactions),
-                  )
-                : txListWidget
         ]),
       ),
     );

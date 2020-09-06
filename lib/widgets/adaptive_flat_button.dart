@@ -7,18 +7,20 @@ class AdaptiveFlatButton extends StatelessWidget {
   final String text;
   final Function handler;
 
-  AdaptiveFlatButton(this.text, this.handler);
+  const AdaptiveFlatButton(this.text, this.handler);
 
   @override
   Widget build(BuildContext context) {
     return Platform.isIOS
         ? CupertinoButton(
-            child: Text(text, style: TextStyle(fontWeight: FontWeight.bold)),
+            child:
+                Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
             onPressed: handler,
           )
         : FlatButton(
             textColor: Theme.of(context).primaryColor,
-            child: Text(text, style: TextStyle(fontWeight: FontWeight.bold)),
+            child:
+                Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
             onPressed: handler,
           );
   }

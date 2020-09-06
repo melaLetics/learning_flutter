@@ -7,7 +7,7 @@ import '../models/transaction.dart';
 class Chart extends StatelessWidget {
   final List<Transaction> recentTransactions;
 
-  Chart(this.recentTransactions);
+  const Chart(this.recentTransactions);
 
   double get totalSpending {
     return groupedTransactionValues.fold(0.0, (sum, item) {
@@ -41,9 +41,9 @@ class Chart extends StatelessWidget {
       height: MediaQuery.of(context).size.height * 0.25,
       child: Card(
         elevation: 6,
-        margin: EdgeInsets.all(20),
+        margin: const EdgeInsets.all(20),
         child: Padding(
-          padding: EdgeInsets.all(10),
+          padding: const EdgeInsets.all(10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: groupedTransactionValues.map(

@@ -6,7 +6,7 @@ import '../widgets/adaptive_flat_button.dart';
 class NewTransaction extends StatefulWidget {
   final Function addTx;
 
-  NewTransaction(this.addTx);
+  const NewTransaction(this.addTx);
 
   @override
   _NewTransactionState createState() => _NewTransactionState();
