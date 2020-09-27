@@ -5,8 +5,15 @@ import '../providers/cart.dart' show Cart;
 import '../widgets/cart_item.dart';
 import '../providers/orders.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   static const routeName = '/cart-screen';
+
+  @override
+  _CartScreenState createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  var _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -40,17 +47,50 @@ class CartScreen extends StatelessWidget {
                     ),
                     backgroundColor: Theme.of(context).primaryColor,
                   ),
-                  FlatButton(
-                    child: Text('ORDER NOW'),
-                    onPressed: () {
-                      Provider.of<Orders>(context, listen: false).addOrder(
-                        cart.items.values.toList(),
-                        cart.totalAmount,
-                      );
-                      cart.clearCart();
-                    },
-                    textColor: Theme.of(context).primaryColor,
-                  )
+                  _isLoading
+                      ? Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      : FlatButton(
+                          child: Text('ORDER NOW'),
+                          onPressed: (cart.totalAmount <= 0.0 || _isLoading)
+                              ? null
+                              : () async {
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
+                                  try {
+                                    await Provider.of<Orders>(context,
+                                            listen: false)
+                                        .addOrder(
+                                      cart.items.values.toList(),
+                                      cart.totalAmount,
+                                    );
+                                    cart.clearCart();
+                                  } catch (error) {
+                                    await showDialog<Null>(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        title: Text('An error occured'),
+                                        content: Text(error.toString()),
+                                        actions: [
+                                          FlatButton(
+                                            child: Text('Okay'),
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  } finally {
+                                    setState(() {
+                                      _isLoading = false;
+                                    });
+                                  }
+                                },
+                          textColor: Theme.of(context).primaryColor,
+                        )
                 ],
               ),
             ),

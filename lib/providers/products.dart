@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../models/http_exception.dart';
 import 'product.dart';
 
 class Products with ChangeNotifier {
@@ -21,11 +22,14 @@ class Products with ChangeNotifier {
   }
 
   Future<void> fetchProducts() async {
-    const url = 'https://flutter-http-d88aa.firebaseio.com//products.json';
+    const url = 'https://flutter-http-d88aa.firebaseio.com/products.json';
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       final List<Product> loadedProducts = [];
+      if (extractedData == null) {
+        return;
+      }
       extractedData.forEach((prodId, prodData) {
         loadedProducts.add(Product(
           id: prodId,
@@ -44,7 +48,7 @@ class Products with ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) async {
-    const url = 'https://flutter-http-d88aa.firebaseio.com//products.json';
+    const url = 'https://flutter-http-d88aa.firebaseio.com/products.json';
     try {
       final response = await http.post(
         url,
@@ -73,8 +77,7 @@ class Products with ChangeNotifier {
   Future<void> updateProduct(String id, Product newProduct) async {
     final prodIndex = _items.indexWhere((element) => element.id == id);
     if (prodIndex >= 0) {
-      final url =
-          'https://flutter-http-d88aa.firebaseio.com//products/$id.json';
+      final url = 'https://flutter-http-d88aa.firebaseio.com/products/$id.json';
       try {
         await http.patch(url,
             body: json.encode({
@@ -91,20 +94,19 @@ class Products with ChangeNotifier {
     }
   }
 
-  void deleteProduct(String id) {
+  Future<void> deleteProduct(String id) async {
     final url = 'https://flutter-http-d88aa.firebaseio.com//products/$id.json';
     final existingId = _items.indexWhere((item) => item.id == id);
     var existingProduct = _items[existingId];
     _items.removeAt(existingId);
     notifyListeners();
-    http.delete(url).then((response) {
-      if (response.statusCode >= 400) {
-        throw Exception();
-      }
-      existingProduct = null;
-    }).catchError((_) {
+
+    final response = await http.delete(url);
+    if (response.statusCode >= 400) {
       _items.insert(existingId, existingProduct);
       notifyListeners();
-    });
+      throw HttpException('Could not delete product.');
+    }
+    existingProduct = null;
   }
 }
